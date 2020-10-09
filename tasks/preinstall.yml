@@ -1,0 +1,43 @@
+---
+- name: install preinstall package
+  yum: name={{packages}} state=present
+  delegate_to: '{{ _oracle_nodes.ip_addr }}'
+  with_items: 
+   - "{{ nodes }}"
+  loop_control:
+   loop_var: _oracle_nodes
+   label: '[install requered packages on node {{_oracle_nodes.name}}]'
+- name: disable firewall
+  service: name=firewalld state=stopped  enabled=false
+  delegate_to: '{{_oracle_nodes.ip_addr}}'
+  with_items: 
+   - "{{ nodes }}"
+  loop_control:
+   loop_var: _oracle_nodes
+- name: create directories
+  file: 
+    path: "{{ _oracle_param[0] }}"
+    state: directory
+    mode: 0775
+    owner: "{{grid_home.oracle_user}}"
+    group: "{{grid_home.oracle_install_group}}"
+  delegate_to: '{{_oracle_param[1].ip_addr}}'
+  with_nested:
+     - ['{{grid_home.oracle_base}}','{{ grid_home.oracle_home }}','{{ grid_home.oracle_inventory }}','{{ stage_dir }}']
+     - "{{ nodes }}"
+  loop_control:
+    loop_var: _oracle_param   
+    label: "Created directory  {{_oracle_param[0]}} on HOST:  {{_oracle_param[1].name}}" 
+-  name: gen oracle password
+   user: 
+     name: '{{grid_home.oracle_user}}'
+     password: "{{ oracle_password  | password_hash('sha512') }}" 
+   delegate_to: '{{ _oracle_param.ip_addr }}'
+   with_items:
+     - "{{ nodes }}"
+   loop_control:
+    loop_var: _oracle_param  
+    label: '[set password for user {{ grid_home.oracle_user }}]'
+
+ 
+  

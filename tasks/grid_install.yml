@@ -1,0 +1,25 @@
+---
+- name: Copy rspfile
+  template: src=grid_install.rsp.j2 dest={{stage_dir}}/gridInstallSoft.rsp mode=660
+  become: true
+  become_user: "{{grid_home.oracle_user}}"  
+- name: Run gridSetupSoftOnly
+  shell: 
+    cmd: "./gridSetup.sh -silent -responseFile {{stage_dir}}/gridInstallSoft.rsp  -skipPrereqs > {{stage_dir}}/softonly_log.lg" 
+    chdir: "{{ grid_home.oracle_home }}"  
+  register: _grid_setup_stdout
+  become: true
+  become_user: "{{grid_home.oracle_user}}"  
+- debug: var=_grid_setup_stdout    
+- name: Run orainstRoot
+  shell:
+    cmd: "{{ grid_home.oracle_inventory }}/orainstRoot.sh" 
+  register: _orainstRoot_stdout 
+  become: true 
+- debug: var=_orainstRoot_stdout      
+- name: Run root.sh
+  shell:
+    cmd: "{{ grid_home.oracle_home }}/root.sh"   
+  register: _rootsh_stdout  
+  become: true
+- debug: var=_rootsh_stdout   

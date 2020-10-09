@@ -1,0 +1,35 @@
+---
+- debug: 
+    msg: 'START on MASTER_NODE {{inventory_hostname}}'
+- block:
+  - name: run preinstall tasks
+    include_tasks: preinstall.yml
+  become: true
+  tags: install,preinstall
+
+- name: Unpack Oracle  Database Software
+  unarchive:  
+    src:  "{{ ora_archive_file_url }}"   
+    dest: "{{ grid_home.oracle_home }}"
+    remote_src: yes 
+    owner: "{{ grid_home.oracle_user }}"
+    group: "{{ grid_home.oracle_install_group }}"
+  become: true  
+  become_user: "{{ grid_home.oracle_user }}"
+  register: _unzipped_grid
+  tags: install,unzip
+
+- block:
+    - name: configure SSH
+      include_tasks: configure_ssh_connectivity.yml
+  tags: install,ssh
+
+- block:
+  - name: install ORACLE_GRID softonly  
+    include_tasks: grid_install.yml
+  environment:
+    ORACLE_BASE: "{{ grid_home.oracle_base }}"
+    ORACLE_HOME: "{{ grid_home.oracle_home }}"
+  vars:
+   _type_install: "HA_SWONLY"
+  tags: install,install_soft   

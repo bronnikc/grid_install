@@ -1,0 +1,79 @@
+---
+  - name: create key
+    shell: |
+        mkdir -p ~/.ssh
+        chmod 700 ~/.ssh
+        cd ~/.ssh
+        rm -f *
+        cat /dev/zero | ssh-keygen -t rsa -q -N "" > /dev/null
+    become: true
+    become_user: "{{grid_home.oracle_user}}"
+    delegate_to: '{{_oracle_nodes.ip_addr}}'
+    with_items: 
+     - "{{ nodes }}"
+    loop_control:
+      loop_var: _oracle_nodes
+      label: '[generate rsa_key on node: {{_oracle_nodes.name}}]'  
+   # tags: install, ssh
+  - name: Fetch public key to Ansible host
+    fetch:
+       src: '/home/{{ grid_home.oracle_user }}/.ssh/id_rsa.pub'
+       dest: 'id_rsa-{{_oracle_nodes.ip_addr}}.pub'
+       flat: yes
+    become: true 
+    delegate_to: '{{_oracle_nodes.ip_addr}}'
+    with_items: 
+     - "{{ nodes }}"
+    loop_control:
+      loop_var: _oracle_nodes
+      label: '[take rsa key from node {{_oracle_nodes.name}}]'
+   # tags: install, ssh
+  - name: Deploy SSH Key to nodes into authorized_key
+    authorized_key: 
+      user: "{{grid_home.oracle_user}}"  
+      state: present
+      key: "{{ lookup('file', 'id_rsa-{{_oracle_nodes[1].ip_addr}}.pub') }}" 
+    delegate_to: '{{_oracle_nodes[0].ip_addr}}'
+    with_nested:
+      - "{{ nodes }}"
+      - "{{ nodes }}"
+    loop_control:
+       loop_var: _oracle_nodes
+       label: '[add key id_rsa-{{_oracle_nodes[1].ip_addr}}.pub to node {{_oracle_nodes[0].ip_addr}}]'
+    become: true
+    become_user: "{{grid_home.oracle_user}}"    
+   # tags: install, ssh
+  - name: Get hosts key 
+    shell: |
+      ssh-keyscan -t rsa -H {{ _oracle_nodes.ip_addr }} | awk '{print($2,$3)}' | grep rsa  > host_rsa-{{ _oracle_nodes.ip_addr }}.pub
+    with_items:
+     - "{{ nodes }}"
+    delegate_to: localhost
+    loop_control:
+      loop_var: _oracle_nodes
+      label: '[get public host key from node {{ _oracle_nodes.ip_addr }} '  
+   # tags: install, ssh
+  - name: generate known_hosts 
+    template:
+     src: 'known_hosts.j2' 
+     dest: 'known_hosts'
+    delegate_to: localhost
+   # tags: install, ssh
+  - name: Put known_hosts on nodes
+    copy:
+       src: "./known_hosts"
+       dest: "~/.ssh/known_hosts" 
+    become: true
+    become_user: "{{grid_home.oracle_user}}"   
+    delegate_to: "{{_oracle_nodes.ip_addr}}"
+    with_items: 
+      - "{{ nodes }}"
+    loop_control:
+       loop_var: _oracle_nodes
+       label: '[Put known_hosts to node _oracle_nodes.ip_addr]'
+   # tags: install, ssh
+  - name: Delete public keys from ansible host
+    shell: |
+      rm -rf *.pub && rm -f known_hosts
+    delegate_to: localhost
+   # tags: install, ssh

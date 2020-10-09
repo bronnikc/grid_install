@@ -1,0 +1,7 @@
+{% for  key in nodes %}
+{{key.name}} {{lookup('file', 'host_rsa-'+key.ip_addr+'.pub')}}
+{% endfor %}
+{% for  key in nodes %}
+{{key.ip_addr}} {{lookup('file', 'host_rsa-'+key.ip_addr+'.pub')}}
+{% endfor %}
+
