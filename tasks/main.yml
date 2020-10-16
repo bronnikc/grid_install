@@ -7,7 +7,7 @@
   become: true
   tags: install,preinstall
 
-- name: Unpack Oracle  Database Software
+- name: Unpack Oracle  Database Software {{ ora_archive_file_url }}
   unarchive:  
     src:  "{{ ora_archive_file_url }}"   
     dest: "{{ grid_home.oracle_home }}"
