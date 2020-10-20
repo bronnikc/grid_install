@@ -70,7 +70,7 @@
       - "{{ nodes }}"
     loop_control:
        loop_var: _oracle_nodes
-       label: '[Put known_hosts to node _oracle_nodes.ip_addr]'
+       label: '[Put known_hosts to node {{ _oracle_nodes.name }}]'
    # tags: install, ssh
   - name: Delete public keys from ansible host
     shell: |
