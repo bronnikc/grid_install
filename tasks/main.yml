@@ -7,17 +7,17 @@
   become: true
   tags: install,preinstall
 
-- name: Unpack Oracle  Database Software {{ ora_archive_file_url }}
-  unarchive:  
-    src:  "{{ ora_archive_file_url }}"   
-    dest: "{{ grid_home.oracle_home }}"
-    remote_src: yes 
-    owner: "{{ grid_home.oracle_user }}"
-    group: "{{ grid_home.oracle_install_group }}"
-  become: true  
-  become_user: "{{ grid_home.oracle_user }}"
-  register: _unzipped_grid
-  tags: install,unzip
+# - name: Unpack Oracle  Database Software {{ ora_archive_file_url }}
+#   unarchive:  
+#     src:  "{{ ora_archive_file_url }}"   
+#     dest: "{{ grid_home.oracle_home }}"
+#     remote_src: yes 
+#     owner: "{{ grid_home.oracle_user }}"
+#     group: "{{ grid_home.oracle_install_group }}"
+#   become: true  
+#   become_user: "{{ grid_home.oracle_user }}"
+#   register: _unzipped_grid
+#   tags: install,unzip
 
 - block:
     - name: configure SSH
