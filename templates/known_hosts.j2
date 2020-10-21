@@ -1,12 +1,5 @@
 {% for  key in nodes %}
 {{key.name}} {{lookup('file', 'host_rsa-'+key.ip_addr+'.pub')}}
-{% endfor %}
-{% for  key in nodes %}
+{{key.name| regex_replace('\\..*')}} {{lookup('file', 'host_rsa-'+key.ip_addr+'.pub')}}
 {{key.ip_addr}} {{lookup('file', 'host_rsa-'+key.ip_addr+'.pub')}}
-{% endfor %}
-{% for  key in nodes %}
-dc3-srv-ora1 {{lookup('file', 'host_rsa-'+key.ip_addr+'.pub')}}
-{% endfor %}
-{% for  key in nodes %}
-dc3-srv-ora2 {{lookup('file', 'host_rsa-'+key.ip_addr+'.pub')}}
 {% endfor %}
