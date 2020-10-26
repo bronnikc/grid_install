@@ -1,8 +1,6 @@
 ---
 - debug: 
     msg: 'START on MASTER_NODE {{inventory_hostname}}'
-- debug: var=nodes
-- debug: var=grid_home
 - block:
   - name: run preinstall tasks
     include_tasks: preinstall.yml
